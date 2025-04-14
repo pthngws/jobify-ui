@@ -1,32 +1,63 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { register } from "../services/authService";
+
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("applicant");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const validateInputs = () => {
+    if (!email || !password || !role) {
+      setError("Vui lòng điền đầy đủ thông tin");
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("Email không hợp lệ");
+      return false;
+    }
+    if (password.length < 6) {
+      setError("Mật khẩu phải có ít nhất 6 ký tự");
+      return false;
+    }
+    if (!["applicant", "employer"].includes(role)) {
+      setError("Vai trò không hợp lệ");
+      return false;
+    }
+    return true;
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+
+    if (!validateInputs()) return;
+
+    setIsLoading(true);
     try {
-      const response = await axios.post("http://localhost:8080/api/auth/register", {
-        email,
-        password,
-        role,
-      });
-      setSuccessMessage(response.data.message);
-      setError("");
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000)
-      console.log(response.data);
-    // eslint-disable-next-line no-unused-vars
+      const response = await register({ email, password, role });
+      const { success, message } = response.data;
+
+      if (success) {
+        setSuccessMessage(message || "Đăng ký thành công!");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      } else {
+        setError(response.data.error || "Đăng ký thất bại!");
+      }
     } catch (err) {
-      setError("Đăng ký thất bại! Kiểm tra lại thông tin.");
-      setSuccessMessage("");
+      setError(
+        err.response?.data?.error ||
+          "Đăng ký thất bại! Kiểm tra lại thông tin."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -37,10 +68,10 @@ const Register = () => {
           Đăng Ký
         </h2>
         {successMessage && (
-  <div className="text-green-500 dark:text-green-400 text-center mb-6 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-    {successMessage}
-  </div>
-)}
+          <div className="text-green-500 dark:text-green-400 text-center mb-6 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+            {successMessage}
+          </div>
+        )}
         {error && (
           <div className="text-red-500 dark:text-red-400 text-center mb-6 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
             {error}
@@ -58,9 +89,10 @@ const Register = () => {
               type="email"
               id="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.trim())}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-200 text-base"
               required
+              disabled={isLoading}
             />
           </div>
           <div className="mb-6">
@@ -77,6 +109,7 @@ const Register = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-200 text-base"
               required
+              disabled={isLoading}
             />
           </div>
           <div className="mb-8">
@@ -91,6 +124,7 @@ const Register = () => {
               value={role}
               onChange={(e) => setRole(e.target.value)}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-200 text-base"
+              disabled={isLoading}
             >
               <option value="applicant">Ứng viên</option>
               <option value="employer">Nhà tuyển dụng</option>
@@ -98,9 +132,10 @@ const Register = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800 transition duration-200 font-semibold text-lg"
+            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800 transition duration-200 font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading}
           >
-            Đăng Ký
+            {isLoading ? "Đang đăng ký..." : "Đăng Ký"}
           </button>
         </form>
         <p className="mt-6 text-center text-base text-gray-600 dark:text-gray-400">
