@@ -1,0 +1,8 @@
+<svg width="60" height="60" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Nền tròn -->
+  <circle cx="256" cy="256" r="256" fill="#10b981"/>
+
+  <!-- Chữ J to, dày và lệch phải -->
+  <path d="M264 64h64v256c0 53-43 96-96 96s-96-43-96-96h56c0 22 18 40 40 40s40-18 40-40V144h-56V64z"
+        fill="#FFFFFF"/>
+</svg>

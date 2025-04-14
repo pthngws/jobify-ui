@@ -7,7 +7,7 @@ const ActionSection = ({ user }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-      {user.role === "applicant" ? (
+      {user.role === "candidate" ? (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
             Tìm việc làm

@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Jobs from "./pages/Jobs";
 import Profile from "./pages/Profile";
 import ViewResume from "./pages/ViewResume";
+import JobDetail from "./pages/JobDetail";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 import { FilterProvider } from "./contexts/FilterContext";
 
@@ -60,6 +61,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/" element={<Navigate to="/home" />} />
               <Route path="/view-resume" element={<ViewResume />} />
+              <Route path="/jobs/:id" element={<JobDetail />} />
             </Route>
           </Routes>
         </div>
