@@ -1,7 +1,7 @@
-// pages/JobDetail.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getJobById } from "../services/jobService";
+import { createApplication } from "../services/applicationService";
 import {
   BuildingOfficeIcon,
   MapPinIcon,
@@ -15,12 +15,21 @@ const JobDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    const fetchJob = async () => {
+    const fetchJobAndUser = async () => {
       try {
+        // Lấy thông tin user
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+
+        // Lấy thông tin job
         const response = await getJobById(id);
         if (response.data.success) {
           setJob(response.data.data);
@@ -35,8 +44,44 @@ const JobDetail = () => {
       }
     };
 
-    fetchJob();
+    fetchJobAndUser();
   }, [id]);
+
+  const handleApply = async () => {
+    if (!user) {
+      setError("Vui lòng đăng nhập để ứng tuyển!");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
+    if (user.role !== "candidate") {
+      setError("Chỉ ứng viên được phép ứng tuyển!");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
+    setError("");
+    setSuccessMessage("");
+
+    try {
+      const response = await createApplication({
+        job: id,
+        applicant: user._id,
+      });
+
+      if (response.data.success) {
+        setSuccessMessage("Ứng tuyển thành công!");
+        setTimeout(() => setSuccessMessage(""), 3000);
+      } else {
+        setError("Không thể ứng tuyển! Vui lòng thử lại.");
+      }
+    } catch (err) {
+      setError("Bạn đã ứng tuyển công việc này rồi!");
+      setTimeout(() => setError(""), 3000);
+    }
+  };
+
+  const isJobActive = job && job.status === "active" && new Date(job.closingDate) >= new Date();
 
   if (loading) {
     return (
@@ -58,6 +103,18 @@ const JobDetail = () => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 flex flex-col">
       <main className="flex-grow px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+          {/* Thông báo */}
+          {successMessage && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg mb-4">
+              {successMessage}
+            </div>
+          )}
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg mb-4">
+              {error}
+            </div>
+          )}
+
           {/* Header: Logo & Title */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-shrink-0">
@@ -92,14 +149,23 @@ const JobDetail = () => {
               <CurrencyDollarIcon className="w-5 h-5 text-green-400" />
               <p className="text-gray-600 dark:text-gray-400">
                 <span className="font-medium">Mức lương:</span>{" "}
-                {(job.salary.min / 1000000).toFixed(1)} - {(job.salary.max / 1000000).toFixed(1)} triệu {job.salary.currency}
+                {(job.salary.min / 1000000).toFixed(1)} -{" "}
+                {(job.salary.max / 1000000).toFixed(1)} triệu {job.salary.currency}
               </p>
             </div>
             <div className="flex items-center gap-2">
               <ClockIcon className="w-5 h-5 text-green-400" />
               <p className="text-gray-600 dark:text-gray-400">
                 <span className="font-medium">Loại công việc:</span>{" "}
-                {job.jobType === "full-time" ? "Toàn thời gian" : "Bán thời gian"}
+                {job.jobType === "full-time"
+                  ? "Toàn thời gian"
+                  : job.jobType === "part-time"
+                  ? "Bán thời gian"
+                  : job.jobType === "remote"
+                  ? "Làm việc từ xa"
+                  : job.jobType === "contract"
+                  ? "Hợp đồng"
+                  : "Thực tập"}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -203,8 +269,17 @@ const JobDetail = () => {
             </p>
           </div>
 
+        
           {/* Actions */}
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex justify-end gap-4">
+            {user?.role === "candidate" && isJobActive && (
+              <button
+                onClick={handleApply}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 dark:bg-green-400 dark:hover:bg-green-500 transition duration-200"
+              >
+                Ứng tuyển
+              </button>
+            )}
             <button
               onClick={() => navigate(-1)}
               className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-200"

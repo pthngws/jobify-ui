@@ -1,18 +1,20 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { register } from "../services/authService";
+import { useNavigate, useLocation } from "react-router-dom";
+import { completeRegistration } from "../services/authService";
 
-const Register = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("applicant");
+const VerifyOTP = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialEmail = decodeURIComponent(queryParams.get("email") || "");
+  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const validateInputs = () => {
-    if (!email || !password || !role) {
+    if (!email || !otp) {
       setError("Vui lòng điền đầy đủ thông tin");
       return false;
     }
@@ -20,18 +22,14 @@ const Register = () => {
       setError("Email không hợp lệ");
       return false;
     }
-    if (password.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự");
-      return false;
-    }
-    if (!["candidate", "recruit"].includes(role)) {
-      setError("Vai trò không hợp lệ");
+    if (otp.length !== 6) {
+      setError("OTP phải có 6 chữ số");
       return false;
     }
     return true;
   };
 
-  const handleRegister = async (e) => {
+  const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
@@ -40,21 +38,21 @@ const Register = () => {
 
     setIsLoading(true);
     try {
-      const response = await register({ email, password, role });
+      const response = await completeRegistration({ email, otp });
       const { success, message } = response.data;
 
       if (success) {
-        setSuccessMessage(message || "OTP đã được gửi đến email của bạn!");
+        setSuccessMessage(message || "Xác thực OTP thành công!");
         setTimeout(() => {
-          navigate(`/verify-otp?email=${encodeURIComponent(email)}`);
+          navigate("/login");
         }, 2000);
       } else {
-        setError(response.data.error || "Đăng ký thất bại!");
+        setError(response.data.error || "Xác thực OTP thất bại!");
       }
     } catch (err) {
       setError(
         err.response?.data?.error ||
-          "Đăng ký thất bại! Kiểm tra lại thông tin."
+          "Xác thực OTP thất bại! Vui lòng thử lại."
       );
     } finally {
       setIsLoading(false);
@@ -65,7 +63,7 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-colors duration-300 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
         <h2 className="text-4xl font-extrabold text-center text-green-600 dark:text-green-400 mb-8">
-          Đăng Ký
+          Xác Thực OTP
         </h2>
         {successMessage && (
           <div className="text-green-500 dark:text-green-400 text-center mb-6 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
@@ -77,7 +75,7 @@ const Register = () => {
             {error}
           </div>
         )}
-        <form onSubmit={handleRegister}>
+        <form onSubmit={handleVerifyOTP}>
           <div className="mb-6">
             <label
               htmlFor="email"
@@ -92,59 +90,43 @@ const Register = () => {
               onChange={(e) => setEmail(e.target.value.trim())}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-300 text-base"
               required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 text-left"
-            >
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-300 text-base"
-              required
-              disabled={isLoading}
+              disabled={isLoading || initialEmail} // Disable nếu email được truyền từ query
             />
           </div>
           <div className="mb-8">
             <label
-              htmlFor="role"
+              htmlFor="otp"
               className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 text-left"
             >
-              Vai trò
+              Mã OTP
             </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+            <input
+              type="text"
+              id="otp"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.trim())}
               className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-300 text-base"
+              required
               disabled={isLoading}
-            >
-              <option value="candidate">Ứng viên</option>
-              <option value="recruit">Nhà tuyển dụng</option>
-            </select>
+              maxLength={6}
+            />
           </div>
           <button
             type="submit"
             className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800 transition duration-300 font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading}
           >
-            {isLoading ? "Đang đăng ký..." : "Đăng Ký"}
+            {isLoading ? "Đang xác thực..." : "Xác Thực"}
           </button>
         </form>
         <p className="mt-6 text-center text-base text-gray-600 dark:text-gray-400">
-          Đã có tài khoản?{" "}
+          Không nhận được OTP?{" "}
           <a
-            href="/login"
+            href="#"
             className="text-green-600 dark:text-green-400 hover:underline font-medium"
+            onClick={() => alert("Chức năng gửi lại OTP đang phát triển")}
           >
-            Đăng nhập ngay
+            Gửi lại OTP
           </a>
         </p>
       </div>
@@ -152,4 +134,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default VerifyOTP;

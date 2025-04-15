@@ -1,12 +1,19 @@
-// App.jsx
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
+import PublicRoute from "./routes/PublicRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyOTP from "./pages/VerifyOTP";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Home from "./pages/Home";
 import Jobs from "./pages/Jobs";
+import PostJob from "./pages/PostJob";
+import JobList from "./pages/JobList";
+import ApplicationList from "./pages/ApplicationList";
 import Profile from "./pages/Profile";
+import Company from "./pages/Company";
 import ViewResume from "./pages/ViewResume";
 import JobDetail from "./pages/JobDetail";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
@@ -53,12 +60,55 @@ function App() {
             )}
           </button>
           <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicRoute>
+                  <Register />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/verify-otp"
+              element={
+                <PublicRoute>
+                  <VerifyOTP />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <PublicRoute>
+                  <ForgotPassword />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <PublicRoute>
+                  <ResetPassword />
+                </PublicRoute>
+              }
+            />
             <Route element={<MainLayout />}>
               <Route path="/home" element={<Home />} />
+              <Route path="/post-job" element={<PostJob />} />
+              <Route path="/edit-job/:id" element={<PostJob />} />
+              <Route path="/my-jobs" element={<JobList />} />
+              <Route path="/job/:jobId/applications" element={<ApplicationList />} />
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/company" element={<Company />} />
               <Route path="/" element={<Navigate to="/home" />} />
               <Route path="/view-resume" element={<ViewResume />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
