@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import UIShowcase from "./pages/UIShowcase";
 import MainLayout from "./layouts/MainLayout";
 import PublicRoute from "./routes/PublicRoute";
 import Login from "./pages/Login";
@@ -101,6 +102,8 @@ function App() {
               }
             />
             <Route element={<MainLayout />}>
+            <Route path="/ui-showcase" element={<UIShowcase />} />
+
               <Route path="/home" element={<Home />} />
               <Route path="/post-job" element={<PostJob />} />
               <Route path="/edit-job/:id" element={<PostJob />} />

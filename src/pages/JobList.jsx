@@ -14,14 +14,14 @@ import {
   ClockIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
+import Alert from "../components/ui/Alert";
 
 const JobList = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [alert, setAlert] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -33,13 +33,21 @@ const JobList = () => {
         setUser(parsedUser);
 
         if (parsedUser.role !== "recruit") {
-          setError("Chỉ nhà tuyển dụng được phép xem danh sách công việc!");
+          setAlert({
+            show: true,
+            message: "Chỉ nhà tuyển dụng được phép xem danh sách công việc!",
+            type: "error",
+          });
           setIsLoading(false);
           return;
         }
 
         if (!parsedUser.company) {
-          setError("Thông tin công ty không hợp lệ! Vui lòng cập nhật hồ sơ công ty.");
+          setAlert({
+            show: true,
+            message: "Thông tin công ty không hợp lệ! Vui lòng cập nhật hồ sơ công ty.",
+            type: "error",
+          });
           setIsLoading(false);
           return;
         }
@@ -50,10 +58,18 @@ const JobList = () => {
             if (response.data.success) {
               setJobs(response.data.data);
             } else {
-              setError("Không tìm thấy công việc nào!");
+              setAlert({
+                show: true,
+                message: "Không tìm thấy công việc nào!",
+                type: "error",
+              });
             }
           } catch (err) {
-            setError(err.response?.data?.message || "Lỗi khi tải danh sách công việc!");
+            setAlert({
+              show: true,
+              message: err.response?.data?.message || "Lỗi khi tải danh sách công việc!",
+              type: "error",
+            });
           } finally {
             setIsLoading(false);
           }
@@ -74,8 +90,7 @@ const JobList = () => {
 
   const handleToggleStatus = async (jobId, currentStatus) => {
     const newStatus = currentStatus === "active" ? "closed" : "active";
-    setError("");
-    setSuccessMessage("");
+    setAlert({ show: false, message: "", type: "success" });
 
     try {
       const response = await updateJob(jobId, { status: newStatus });
@@ -85,17 +100,27 @@ const JobList = () => {
             job._id === jobId ? { ...job, status: newStatus } : job
           )
         );
-        setSuccessMessage(
-          `Cập nhật trạng thái thành công! Công việc giờ là ${
+        setAlert({
+          show: true,
+          message: `Cập nhật trạng thái thành công! Công việc giờ là ${
             newStatus === "active" ? "Đang tuyển" : "Đã đóng"
-          }.`
-        );
-        setTimeout(() => setSuccessMessage(""), 3000);
+          }.`,
+          type: "success",
+        });
+        setTimeout(() => setAlert({ show: false, message: "", type: "success" }), 3000);
       } else {
-        setError("Không thể cập nhật trạng thái!");
+        setAlert({
+          show: true,
+          message: "Không thể cập nhật trạng thái!",
+          type: "error",
+        });
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Lỗi khi cập nhật trạng thái công việc!");
+      setAlert({
+        show: true,
+        message: err.response?.data?.message || "Lỗi khi cập nhật trạng thái công việc!",
+        type: "error",
+      });
     }
   };
 
@@ -104,30 +129,39 @@ const JobList = () => {
       return;
     }
 
-    setError("");
-    setSuccessMessage("");
+    setAlert({ show: false, message: "", type: "success" });
 
     try {
       const response = await deleteJob(jobId);
       if (response.data.success) {
         setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
-        setSuccessMessage("Xóa công việc thành công!");
-        setTimeout(() => setSuccessMessage(""), 3000);
+        setAlert({
+          show: true,
+          message: "Xóa công việc thành công!",
+          type: "success",
+        });
+        setTimeout(() => setAlert({ show: false, message: "", type: "success" }), 3000);
       } else {
-        setError("Không thể xóa công việc!");
+        setAlert({
+          show: true,
+          message: "Không thể xóa công việc!",
+          type: "error",
+        });
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Lỗi khi xóa công việc!");
+      setAlert({
+        show: true,
+        message: err.response?.data?.message || "Lỗi khi xóa công việc!",
+        type: "error",
+      });
     }
   };
 
   const handleEdit = (jobId) => {
-    console.log("Navigating to edit job:", jobId);
     navigate(`/edit-job/${jobId}`);
   };
 
   const handleViewApplications = (jobId) => {
-    console.log("Navigating to applications for job:", jobId);
     navigate(`/job/${jobId}/applications`);
   };
 
@@ -148,15 +182,12 @@ const JobList = () => {
               Danh Sách Công Việc Đã Đăng
             </h1>
 
-            {successMessage && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg mb-4">
-                {successMessage}
-              </div>
-            )}
-            {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg mb-4">
-                {error}
-              </div>
+            {alert.show && (
+              <Alert
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ show: false, message: "", type: "success" })}
+              />
             )}
 
             {jobs.length === 0 ? (

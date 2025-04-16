@@ -14,6 +14,10 @@ import {
   CalendarIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/outline";
+import Input from "../components/ui/Input";
+import Textarea from "../components/ui/Textarea";
+import Button from "../components/ui/Button";
+import Alert from "../components/ui/Alert";
 
 const PostJob = () => {
   const { id } = useParams();
@@ -35,8 +39,7 @@ const PostJob = () => {
   });
   const [isEditing, setIsEditing] = useState(!!id);
   const [isCreating, setIsCreating] = useState(!id);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [alert, setAlert] = useState({ show: false, message: "", type: "success" });
   const [isLoading, setIsLoading] = useState(false);
 
   // Danh sách giá trị cho selectbox, hiển thị tiếng Việt, khớp với JobSchema
@@ -70,9 +73,9 @@ const PostJob = () => {
     { value: "senior", label: "Cao cấp" },
   ];
   const currencies = [
-    { value: "VND", label: "VND (Việt Nam Đồng)" },
-    { value: "USD", label: "USD (Đô la Mỹ)" },
-    { value: "EUR", label: "EUR (Euro)" },
+    { value: "VND", label: "VND" },
+    { value: "USD", label: "USD" },
+    { value: "EUR", label: "EUR" },
   ];
 
   useEffect(() => {
@@ -85,7 +88,11 @@ const PostJob = () => {
         setUser(parsedUser);
 
         if (parsedUser.role !== "recruit") {
-          setError("Chỉ nhà tuyển dụng được phép đăng công việc!");
+          setAlert({
+            show: true,
+            message: "Chỉ nhà tuyển dụng được phép đăng công việc!",
+            type: "error",
+          });
           return;
         }
 
@@ -116,11 +123,19 @@ const PostJob = () => {
                     : "",
                 });
               } else {
-                setError("Không tìm thấy công việc!");
+                setAlert({
+                  show: true,
+                  message: "Không tìm thấy công việc!",
+                  type: "error",
+                });
               }
             })
             .catch((err) => {
-              setError("Không thể tải thông tin công việc!");
+              setAlert({
+                show: true,
+                message: "Không thể tải thông tin công việc!",
+                type: "error",
+              });
             })
             .finally(() => setIsLoading(false));
         }
@@ -173,69 +188,124 @@ const PostJob = () => {
 
   const validateInputs = () => {
     if (!job.title.trim()) {
-      setError("Tiêu đề công việc là bắt buộc!");
+      setAlert({
+        show: true,
+        message: "Tiêu đề công việc là bắt buộc!",
+        type: "error",
+      });
       return false;
     }
     if (job.title.length > 100) {
-      setError("Tiêu đề không được vượt quá 100 ký tự!");
+      setAlert({
+        show: true,
+        message: "Tiêu đề không được vượt quá 100 ký tự!",
+        type: "error",
+      });
       return false;
     }
     if (!job.description.trim()) {
-      setError("Mô tả công việc là bắt buộc!");
+      setAlert({
+        show: true,
+        message: "Mô tả công việc là bắt buộc!",
+        type: "error",
+      });
       return false;
     }
     if (job.description.length < 10) {
-      setError("Mô tả phải có ít nhất 10 ký tự!");
+      setAlert({
+        show: true,
+        message: "Mô tả phải có ít nhất 10 ký tự!",
+        type: "error",
+      });
       return false;
     }
     if (!job.location.trim()) {
-      setError("Địa điểm là bắt buộc!");
+      setAlert({
+        show: true,
+        message: "Địa điểm là bắt buộc!",
+        type: "error",
+      });
       return false;
     }
     if (job.location.length > 100) {
-      setError("Địa điểm không được vượt quá 100 ký tự!");
+      setAlert({
+        show: true,
+        message: "Địa điểm không được vượt quá 100 ký tự!",
+        type: "error",
+      });
       return false;
     }
     if (!job.salary.min || !job.salary.max) {
-      setError("Mức lương tối thiểu và tối đa là bắt buộc!");
+      setAlert({
+        show: true,
+        message: "Mức lương tối thiểu và tối đa là bắt buộc!",
+        type: "error",
+      });
       return false;
     }
     if (isNaN(job.salary.min) || isNaN(job.salary.max) || Number(job.salary.min) > Number(job.salary.max)) {
-      setError("Mức lương không hợp lệ! Tối thiểu phải nhỏ hơn hoặc bằng tối đa.");
+      setAlert({
+        show: true,
+        message: "Mức lương không hợp lệ! Tối thiểu phải nhỏ hơn hoặc bằng tối đa.",
+        type: "error",
+      });
       return false;
     }
     if (Number(job.salary.min) < 0 || Number(job.salary.max) < 0) {
-      setError("Mức lương không được âm!");
+      setAlert({
+        show: true,
+        message: "Mức lương không được âm!",
+        type: "error",
+      });
       return false;
     }
     if (!job.jobType) {
-      setError("Loại hình công việc là bắt buộc!");
+      setAlert({
+        show: true,
+        message: "Loại hình công việc là bắt buộc!",
+        type: "error",
+      });
       return false;
     }
     if (!job.closingDate) {
-      setError("Hạn nộp là bắt buộc!");
+      setAlert({
+        show: true,
+        message: "Hạn nộp là bắt buộc!",
+        type: "error",
+      });
       return false;
     }
     if (new Date(job.closingDate) <= new Date()) {
-      setError("Hạn nộp phải là ngày trong tương lai!");
+      setAlert({
+        show: true,
+        message: "Hạn nộp phải là ngày trong tương lai!",
+        type: "error",
+      });
       return false;
     }
     const validRequirements = job.requirements.every((req) => req.trim().length > 0);
     if (!validRequirements) {
-      setError("Yêu cầu phải là các chuỗi không rỗng!");
+      setAlert({
+        show: true,
+        message: "Yêu cầu phải là các chuỗi không rỗng!",
+        type: "error",
+      });
       return false;
     }
     const validBenefits = job.benefits.every((ben) => ben.trim().length > 0);
     if (!validBenefits) {
-      setError("Phúc lợi phải là các chuỗi không rỗng!");
+      setAlert({
+        show: true,
+        message: "Phúc lợi phải là các chuỗi không rỗng!",
+        type: "error",
+      });
       return false;
     }
     return true;
   };
 
   const handleSave = async () => {
-    setError("");
-    setSuccessMessage("");
+    setAlert({ show: false, message: "", type: "success" });
 
     if (!validateInputs()) return;
 
@@ -289,18 +359,25 @@ const PostJob = () => {
       });
       setIsEditing(false);
       setIsCreating(false);
-      setSuccessMessage(isCreating ? "Đăng công việc thành công!" : "Cập nhật công việc thành công!");
+      setAlert({
+        show: true,
+        message: isCreating ? "Đăng công việc thành công!" : "Cập nhật công việc thành công!",
+        type: "success",
+      });
       setTimeout(() => navigate("/jobs"), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || "Lưu công việc thất bại!");
+      setAlert({
+        show: true,
+        message: err.response?.data?.message || "Lưu công việc thất bại!",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
-    setError("");
-    setSuccessMessage("");
+    setAlert({ show: false, message: "", type: "success" });
     if (isCreating) {
       navigate("/jobs");
     } else {
@@ -333,7 +410,11 @@ const PostJob = () => {
           }
         })
         .catch((err) => {
-          setError("Không thể tải lại thông tin công việc!");
+          setAlert({
+            show: true,
+            message: "Không thể tải lại thông tin công việc!",
+            type: "error",
+          });
         })
         .finally(() => setIsLoading(false));
     }
@@ -356,15 +437,12 @@ const PostJob = () => {
               {isCreating ? "Đăng Công Việc Mới" : "Chỉnh Sửa Công Việc"}
             </h1>
 
-            {successMessage && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg mb-4">
-                {successMessage}
-              </div>
-            )}
-            {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg mb-4">
-                {error}
-              </div>
+            {alert.show && (
+              <Alert
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ show: false, message: "", type: "success" })}
+              />
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -376,14 +454,13 @@ const PostJob = () => {
                     <DocumentTextIcon className="w-5 h-5 inline mr-1" />
                     Tiêu đề
                   </label>
-                  <input
+                  <Input
                     type="text"
                     name="title"
                     value={job.title}
                     onChange={handleInputChange}
                     placeholder="Ví dụ: Lập trình viên Full-stack"
                     maxLength={100}
-                    className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
                     disabled={isLoading}
                     required
                   />
@@ -395,14 +472,13 @@ const PostJob = () => {
                     <MapPinIcon className="w-5 h-5 inline mr-1" />
                     Địa điểm
                   </label>
-                  <input
+                  <Input
                     type="text"
                     name="location"
                     value={job.location}
                     onChange={handleInputChange}
                     placeholder="Ví dụ: Hà Nội"
                     maxLength={100}
-                    className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
                     disabled={isLoading}
                     required
                   />
@@ -415,25 +491,23 @@ const PostJob = () => {
                     Lương (triệu)
                   </label>
                   <div className="flex gap-2 flex-1 items-center">
-                    <input
+                    <Input
                       type="number"
                       name="salary.min"
                       value={job.salary.min}
                       onChange={handleInputChange}
-                      placeholder="Tối thiểu"
+                      placeholder="Min"
                       min={0}
-                      className="w-1/3 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
                       disabled={isLoading}
                       required
                     />
-                    <input
+                    <Input
                       type="number"
                       name="salary.max"
                       value={job.salary.max}
                       onChange={handleInputChange}
-                      placeholder="Tối đa"
+                      placeholder="Max"
                       min={0}
-                      className="w-1/3 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
                       disabled={isLoading}
                       required
                     />
@@ -547,7 +621,7 @@ const PostJob = () => {
                     <ClockIcon className="w-5 h-5 inline mr-1" />
                     Giờ làm việc
                   </label>
-                  <input
+                  <Input
                     type="text"
                     name="workHours"
                     value={job.workHours}
@@ -564,7 +638,7 @@ const PostJob = () => {
                     <CalendarIcon className="w-5 h-5 inline mr-1" />
                     Hạn nộp
                   </label>
-                  <input
+                  <Input
                     type="date"
                     name="closingDate"
                     value={job.closingDate}
@@ -584,103 +658,108 @@ const PostJob = () => {
                 <DocumentTextIcon className="w-5 h-5 inline mr-1" />
                 Mô tả công việc
               </label>
-              <textarea
+              <Textarea
                 name="description"
                 value={job.description}
                 onChange={handleInputChange}
                 placeholder="Mô tả chi tiết về công việc (ít nhất 10 ký tự)..."
                 minLength={10}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
                 disabled={isLoading}
                 rows={6}
                 required
               />
             </div>
 
-            {/* Yêu cầu */}
-            <div className="mt-6">
-              <label className="text-gray-500 dark:text-gray-400 text-sm font-medium block mb-2">
-                <DocumentTextIcon className="w-5 h-5 inline mr-1" />
-                Yêu cầu
-              </label>
-              {job.requirements.map((req, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={req}
-                    onChange={(e) => handleArrayChange("requirements", index, e.target.value)}
-                    placeholder={`Yêu cầu ${index + 1} (không để trống)`}
-                    className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
-                    disabled={isLoading}
-                  />
-                  <button
-                    onClick={() => removeArrayItem("requirements", index)}
-                    className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 transition-colors"
-                    disabled={isLoading}
-                  >
-                    Xóa
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={() => addArrayItem("requirements")}
-                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 transition-colors"
-                disabled={isLoading}
-              >
-                Thêm yêu cầu
-              </button>
+            <div className="flex gap-6">
+              {/* Yêu cầu */}
+              <div className="mt-6 w-1/2">
+                <label className="text-gray-500 dark:text-gray-400 text-sm font-medium block mb-2">
+                  <DocumentTextIcon className="w-5 h-5 inline mr-1" />
+                  Yêu cầu
+                </label>
+                {job.requirements.map((req, index) => (
+                  <div key={index} className="flex items-center gap-2 mb-2">
+                    <Input
+                      className="flex-1"
+                      type="text"
+                      value={req}
+                      onChange={(e) => handleArrayChange("requirements", index, e.target.value)}
+                      placeholder={`Yêu cầu ${index + 1} (không để trống)`}
+                      disabled={isLoading}
+                    />
+                    <Button
+                      variant="danger"
+                      className="w-auto px-4 py-2 text-sm"
+                      onClick={() => removeArrayItem("requirements", index)}
+                      disabled={isLoading}
+                    >
+                      Xóa
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  onClick={() => addArrayItem("requirements")}
+                  disabled={isLoading}
+                  className="w-auto px-4 py-2 text-sm"
+                >
+                  Thêm yêu cầu
+                </Button>
+
+              </div>
+
+              {/* Phúc lợi */}
+              <div className="mt-6 w-1/2">
+                <label className="text-gray-500 dark:text-gray-400 text-sm font-medium block mb-2">
+                  <DocumentTextIcon className="w-5 h-5 inline mr-1" />
+                  Phúc lợi
+                </label>
+                {job.benefits.map((ben, index) => (
+                  <div key={index} className="flex items-center gap-2 mb-2">
+                    <Input
+                      className="flex-1"
+                      type="text"
+                      value={ben}
+                      onChange={(e) => handleArrayChange("benefits", index, e.target.value)}
+                      placeholder={`Phúc lợi ${index + 1} (không để trống)`}
+                      disabled={isLoading}
+                    />
+                    <Button
+                      variant="danger"
+                      className="w-auto px-4 py-2 text-sm"
+                      onClick={() => removeArrayItem("benefits", index)}
+                      disabled={isLoading}
+                    >
+                      Xóa
+                    </Button>
+                  </div>
+                ))}
+
+                <Button
+                  className="w-auto px-4 py-2 text-sm"
+                  onClick={() => addArrayItem("benefits")}
+                  disabled={isLoading}
+                >
+                  Thêm phúc lợi
+                </Button>
+              </div>
             </div>
 
-            {/* Phúc lợi */}
-            <div className="mt-6">
-              <label className="text-gray-500 dark:text-gray-400 text-sm font-medium block mb-2">
-                <DocumentTextIcon className="w-5 h-5 inline mr-1" />
-                Phúc lợi
-              </label>
-              {job.benefits.map((ben, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={ben}
-                    onChange={(e) => handleArrayChange("benefits", index, e.target.value)}
-                    placeholder={`Phúc lợi ${index + 1} (không để trống)`}
-                    className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-400 focus:border-green-400 transition-colors"
-                    disabled={isLoading}
-                  />
-                  <button
-                    onClick={() => removeArrayItem("benefits", index)}
-                    className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:opacity-50 transition-colors"
-                    disabled={isLoading}
-                  >
-                    Xóa
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={() => addArrayItem("benefits")}
-                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 transition-colors"
-                disabled={isLoading}
-              >
-                Thêm phúc lợi
-              </button>
-            </div>
 
             {/* Nút hành động */}
             <div className="mt-8 flex justify-end gap-3 border-t border-gray-200 dark:border-gray-700 pt-4">
-              <button
+              <Button
                 onClick={handleSave}
-                className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:ring-2 focus:ring-green-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading}
               >
                 {isLoading ? "Đang lưu..." : isCreating ? "Đăng" : "Lưu"}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
                 onClick={handleCancel}
-                className="px-6 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 focus:ring-2 focus:ring-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading}
               >
                 Hủy
-              </button>
+              </Button>
             </div>
           </div>
         </main>

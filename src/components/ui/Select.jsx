@@ -11,7 +11,7 @@ const Select = ({
   className = '',
 }) => {
   return (
-    <div className="mb-6">
+    <div>
       {label && (
         <label
           htmlFor={id}

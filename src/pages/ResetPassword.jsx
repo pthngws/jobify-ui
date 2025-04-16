@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { resetPassword } from "../services/authService";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Alert from "../components/ui/Alert";
 
 const ResetPassword = () => {
   const { state } = useLocation();
@@ -64,83 +68,47 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-colors duration-300 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
-        <h2 className="text-4xl font-extrabold text-center text-green-600 dark:text-green-400 mb-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
+      <Card className="max-w-md">
+        <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100 mb-6">
           Đặt Lại Mật Khẩu
         </h2>
-        {successMessage && (
-          <div className="text-green-500 dark:text-green-400 text-center mb-6 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-            {successMessage}
-          </div>
-        )}
-        {error && (
-          <div className="text-red-500 dark:text-red-400 text-center mb-6 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-            {error}
-          </div>
-        )}
+        {successMessage && <Alert type="success" message={successMessage} />}
+        {error && <Alert type="error" message={error} />}
         <form onSubmit={handleResetPassword}>
-          <div className="mb-6">
-            <label
-              htmlFor="email"
-              className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 text-left"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value.trim())}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-200 text-base"
-              required
-              disabled={isLoading || initialEmail}
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              htmlFor="otp"
-              className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 text-left"
-            >
-              Mã OTP
-            </label>
-            <input
-              type="text"
-              id="otp"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.trim())}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-200 text-base"
-              required
-              disabled={isLoading}
-              maxLength={6}
-            />
-          </div>
-          <div className="mb-8">
-            <label
-              htmlFor="newPassword"
-              className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 text-left"
-            >
-              Mật khẩu mới
-            </label>
-            <input
-              type="password"
-              id="newPassword"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-200 text-base"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800 transition duration-200 font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          <Input
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value.trim())}
+            disabled={isLoading || initialEmail}
+            required
+          />
+          <Input
+            id="otp"
+            label="Mã OTP"
+            type="text"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.trim())}
             disabled={isLoading}
-          >
-            {isLoading ? "Đang đặt lại..." : "Đặt Lại Mật Khẩu"}
-          </button>
+            required
+            maxLength={6}
+          />
+          <Input
+            id="newPassword"
+            label="Mật khẩu mới"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            disabled={isLoading}
+            required
+          />
+          <Button type="submit" isLoading={isLoading} className="w-full mt-4">
+            Đặt Lại Mật Khẩu
+          </Button>
         </form>
-        <p className="mt-6 text-center text-base text-gray-600 dark:text-gray-400">
+        <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
           Đã có tài khoản?{" "}
           <a
             href="/login"
@@ -149,7 +117,7 @@ const ResetPassword = () => {
             Đăng nhập ngay
           </a>
         </p>
-      </div>
+      </Card>
     </div>
   );
 };

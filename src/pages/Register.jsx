@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../services/authService";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Select from "../components/ui/Select";
+import Alert from "../components/ui/Alert";
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("applicant");
+  const [role, setRole] = useState("candidate");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -61,84 +66,51 @@ const Register = () => {
     }
   };
 
+  const roleOptions = [
+    { value: "candidate", label: "Ứng viên" },
+    { value: "recruit", label: "Nhà tuyển dụng" },
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 transition-colors duration-300 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
-        <h2 className="text-4xl font-extrabold text-center text-green-600 dark:text-green-400 mb-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4 sm:px-6 lg:px-8">
+      <Card className="max-w-md">
+        <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100 mb-6">
           Đăng Ký
         </h2>
-        {successMessage && (
-          <div className="text-green-500 dark:text-green-400 text-center mb-6 p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-            {successMessage}
-          </div>
-        )}
-        {error && (
-          <div className="text-red-500 dark:text-red-400 text-center mb-6 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-            {error}
-          </div>
-        )}
+        {successMessage && <Alert type="success" message={successMessage} />}
+        {error && <Alert type="error" message={error} />}
         <form onSubmit={handleRegister}>
-          <div className="mb-6">
-            <label
-              htmlFor="email"
-              className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 text-left"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value.trim())}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-300 text-base"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              htmlFor="password"
-              className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 text-left"
-            >
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-300 text-base"
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="mb-8">
-            <label
-              htmlFor="role"
-              className="block text-base font-semibold text-gray-700 dark:text-gray-200 mb-2 text-left"
-            >
-              Vai trò
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-300 text-base"
-              disabled={isLoading}
-            >
-              <option value="candidate">Ứng viên</option>
-              <option value="recruit">Nhà tuyển dụng</option>
-            </select>
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800 transition duration-300 font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          <Input
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value.trim())}
             disabled={isLoading}
-          >
-            {isLoading ? "Đang đăng ký..." : "Đăng Ký"}
-          </button>
+            required
+          />
+          <Input
+            id="password"
+            label="Mật khẩu"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={isLoading}
+            required
+          />
+          <Select
+            id="role"
+            label="Vai trò"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            options={roleOptions}
+            disabled={isLoading}
+          />
+          <Button type="submit" isLoading={isLoading} className="w-full mt-4">
+            Đăng Ký
+          </Button>
         </form>
-        <p className="mt-6 text-center text-base text-gray-600 dark:text-gray-400">
+        <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
           Đã có tài khoản?{" "}
           <a
             href="/login"
@@ -147,7 +119,7 @@ const Register = () => {
             Đăng nhập ngay
           </a>
         </p>
-      </div>
+      </Card>
     </div>
   );
 };

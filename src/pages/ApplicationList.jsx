@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import ErrorBoundary from "../components/ErrorBoundary";
 import { getAllApplicationsByJobId, updateApplicationStatus } from "../services/applicationService";
 import { EyeIcon } from "@heroicons/react/24/outline";
+import Alert from "../components/ui/Alert";
 
 const ApplicationList = () => {
   const navigate = useNavigate();
@@ -10,8 +11,7 @@ const ApplicationList = () => {
   const [user, setUser] = useState(null);
   const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [alert, setAlert] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -23,13 +23,21 @@ const ApplicationList = () => {
         setUser(parsedUser);
 
         if (parsedUser.role !== "recruit") {
-          setError("Chỉ nhà tuyển dụng được phép xem danh sách ứng viên!");
+          setAlert({
+            show: true,
+            message: "Chỉ nhà tuyển dụng được phép xem danh sách ứng viên!",
+            type: "error",
+          });
           setIsLoading(false);
           return;
         }
 
         if (!parsedUser.company) {
-          setError("Thông tin công ty không hợp lệ! Vui lòng cập nhật hồ sơ công ty.");
+          setAlert({
+            show: true,
+            message: "Thông tin công ty không hợp lệ! Vui lòng cập nhật hồ sơ công ty.",
+            type: "error",
+          });
           setIsLoading(false);
           return;
         }
@@ -40,10 +48,18 @@ const ApplicationList = () => {
             if (response.data.success) {
               setApplications(response.data.data);
             } else {
-              setError("Không tìm thấy ứng viên nào!");
+              setAlert({
+                show: true,
+                message: "Không tìm thấy ứng viên nào!",
+                type: "error",
+              });
             }
           } catch (err) {
-            setError(err.message || "Lỗi khi tải danh sách ứng viên!");
+            setAlert({
+              show: true,
+              message: err.message || "Lỗi khi tải danh sách ứng viên!",
+              type: "error",
+            });
           } finally {
             setIsLoading(false);
           }
@@ -63,8 +79,7 @@ const ApplicationList = () => {
   }, [navigate, jobId]);
 
   const handleUpdateStatus = async (applicationId, newStatus) => {
-    setError("");
-    setSuccessMessage("");
+    setAlert({ show: false, message: "", type: "success" });
 
     try {
       const response = await updateApplicationStatus(applicationId, { status: newStatus });
@@ -74,25 +89,32 @@ const ApplicationList = () => {
             app._id === applicationId ? { ...app, status: newStatus } : app
           )
         );
-        setSuccessMessage(
-          `Cập nhật trạng thái thành công! Ứng viên giờ là ${statusLabels[newStatus]}.`
-        );
-        setTimeout(() => setSuccessMessage(""), 3000);
+        setAlert({
+          show: true,
+          message: `Cập nhật trạng thái thành công! Ứng viên giờ là ${statusLabels[newStatus]}.`,
+          type: "success",
+        });
+        setTimeout(() => setAlert({ show: false, message: "", type: "success" }), 3000);
       } else {
-        setError("Không thể cập nhật trạng thái!");
+        setAlert({
+          show: true,
+          message: "Không thể cập nhật trạng thái!",
+          type: "error",
+        });
       }
     } catch (err) {
-      setError(err.message || "Lỗi khi cập nhật trạng thái ứng viên!");
+      setAlert({
+        show: true,
+        message: err.message || "Lỗi khi cập nhật trạng thái ứng viên!",
+        type: "error",
+      });
     }
   };
 
   const handleViewResume = (resumeUrl) => {
-    if (resumeUrl) {
-      window.open(resumeUrl, "_blank");
-    } else {
-      setError("Ứng viên chưa cung cấp CV!");
-      setTimeout(() => setError(""), 3000);
-    }
+    navigate("/view-resume", {
+      state: { resumeUrl },
+    });
   };
 
   if (isLoading) {
@@ -112,15 +134,12 @@ const ApplicationList = () => {
               Danh Sách Ứng Viên Ứng Tuyển
             </h1>
 
-            {successMessage && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg mb-4">
-                {successMessage}
-              </div>
-            )}
-            {error && (
-              <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg mb-4">
-                {error}
-              </div>
+            {alert.show && (
+              <Alert
+                message={alert.message}
+                type={alert.type}
+                onClose={() => setAlert({ show: false, message: "", type: "success" })}
+              />
             )}
 
             {applications.length === 0 ? (

@@ -7,6 +7,10 @@ import {
   updateCompany,
   deleteCompany,
 } from "../services/companyService";
+import Input from "../components/ui/Input";
+import Textarea from "../components/ui/Textarea";
+import Button from "../components/ui/Button";
+import Alert from "../components/ui/Alert";
 
 const Company = () => {
   const [user, setUser] = useState(null);
@@ -20,8 +24,7 @@ const Company = () => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [alert, setAlert] = useState({ show: false, message: "", type: "success" });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -35,7 +38,11 @@ const Company = () => {
         setUser(parsedUser);
 
         if (parsedUser.role !== "recruit") {
-          setError("Chỉ nhà tuyển dụng được phép quản lý công ty!");
+          setAlert({
+            show: true,
+            message: "Chỉ nhà tuyển dụng được phép quản lý công ty!",
+            type: "error",
+          });
           return;
         }
 
@@ -56,7 +63,11 @@ const Company = () => {
               if (err.response?.status === 404) {
                 setIsCreating(true);
               } else {
-                setError("Không thể tải thông tin công ty!");
+                setAlert({
+                  show: true,
+                  message: "Không thể tải thông tin công ty!",
+                  type: "error",
+                });
               }
             })
             .finally(() => setIsLoading(false));
@@ -84,7 +95,11 @@ const Company = () => {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file && file.size > 5 * 1024 * 1024) {
-      setError("File avatar không được vượt quá 5MB!");
+      setAlert({
+        show: true,
+        message: "File avatar không được vượt quá 5MB!",
+        type: "error",
+      });
       return;
     }
     setAvatarFile(file);
@@ -92,23 +107,34 @@ const Company = () => {
 
   const validateInputs = () => {
     if (!company.name.trim()) {
-      setError("Tên công ty là bắt buộc!");
+      setAlert({
+        show: true,
+        message: "Tên công ty là bắt buộc!",
+        type: "error",
+      });
       return false;
     }
     if (!company.location.trim()) {
-      setError("Địa điểm là bắt buộc!");
+      setAlert({
+        show: true,
+        message: "Địa điểm là bắt buộc!",
+        type: "error",
+      });
       return false;
     }
     if (company.website && !/^https?:\/\/.+/.test(company.website)) {
-      setError("Website không hợp lệ! Vui lòng bắt đầu bằng http:// hoặc https://");
+      setAlert({
+        show: true,
+        message: "Website không hợp lệ! Vui lòng bắt đầu bằng http:// hoặc https://",
+        type: "error",
+      });
       return false;
     }
     return true;
   };
 
   const handleSave = async () => {
-    setError("");
-    setSuccessMessage("");
+    setAlert({ show: false, message: "", type: "success" });
 
     if (!validateInputs()) return;
 
@@ -142,9 +168,17 @@ const Company = () => {
       setAvatarFile(null);
       setIsEditing(false);
       setIsCreating(false);
-      setSuccessMessage(isCreating ? "Tạo công ty thành công!" : "Cập nhật công ty thành công!");
+      setAlert({
+        show: true,
+        message: isCreating ? "Tạo công ty thành công!" : "Cập nhật công ty thành công!",
+        type: "success",
+      });
     } catch (err) {
-      setError(err.response?.data?.message || "Lưu thông tin công ty thất bại!");
+      setAlert({
+        show: true,
+        message: err.response?.data?.message || "Lưu thông tin công ty thất bại!",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -153,8 +187,7 @@ const Company = () => {
   const handleDelete = async () => {
     if (!window.confirm("Bạn có chắc muốn xóa công ty này?")) return;
 
-    setError("");
-    setSuccessMessage("");
+    setAlert({ show: false, message: "", type: "success" });
     setIsLoading(true);
     try {
       await deleteCompany(user.company);
@@ -169,9 +202,17 @@ const Company = () => {
       localStorage.setItem("user", JSON.stringify({ ...user, company: null }));
       setIsCreating(true);
       setIsEditing(false);
-      setSuccessMessage("Xóa công ty thành công!");
+      setAlert({
+        show: true,
+        message: "Xóa công ty thành công!",
+        type: "success",
+      });
     } catch (err) {
-      setError(err.response?.data?.message || "Xóa công ty thất bại!");
+      setAlert({
+        show: true,
+        message: err.response?.data?.message || "Xóa công ty thất bại!",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -180,8 +221,7 @@ const Company = () => {
   const handleCancel = () => {
     setIsEditing(false);
     setAvatarFile(null);
-    setError("");
-    setSuccessMessage("");
+    setAlert({ show: false, message: "", type: "success" });
     if (!isCreating) {
       setIsLoading(true);
       getCompanyById(user.company)
@@ -196,7 +236,11 @@ const Company = () => {
           });
         })
         .catch(() => {
-          setError("Không thể tải lại thông tin công ty!");
+          setAlert({
+            show: true,
+            message: "Không thể tải lại thông tin công ty!",
+            type: "error",
+          });
         })
         .finally(() => setIsLoading(false));
     } else {
@@ -268,15 +312,12 @@ const Company = () => {
                 <h2 className="text-xl font-medium text-gray-800 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2">
                   Thông Tin Công Ty
                 </h2>
-                {successMessage && (
-                  <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg">
-                    {successMessage}
-                  </div>
-                )}
-                {error && (
-                  <div className="p-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg">
-                    {error}
-                  </div>
+                {alert.show && (
+                  <Alert
+                    message={alert.message}
+                    type={alert.type}
+                    onClose={() => setAlert({ show: false, message: "", type: "success" })}
+                  />
                 )}
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
@@ -284,12 +325,11 @@ const Company = () => {
                       Tên công ty
                     </label>
                     {isEditing ? (
-                      <input
+                      <Input
                         type="text"
                         name="name"
                         value={company.name}
                         onChange={handleInputChange}
-                        className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         disabled={isLoading}
                         required
                       />
@@ -304,11 +344,10 @@ const Company = () => {
                       Mô tả
                     </label>
                     {isEditing ? (
-                      <textarea
+                      <Textarea
                         name="description"
                         value={company.description}
                         onChange={handleInputChange}
-                        className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         disabled={isLoading}
                         rows={4}
                       />
@@ -323,12 +362,11 @@ const Company = () => {
                       Địa điểm
                     </label>
                     {isEditing ? (
-                      <input
+                      <Input
                         type="text"
                         name="location"
                         value={company.location}
                         onChange={handleInputChange}
-                        className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         disabled={isLoading}
                         required
                       />
@@ -343,12 +381,11 @@ const Company = () => {
                       Website
                     </label>
                     {isEditing ? (
-                      <input
+                      <Input
                         type="text"
                         name="website"
                         value={company.website}
                         onChange={handleInputChange}
-                        className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         disabled={isLoading}
                       />
                     ) : (
@@ -372,37 +409,26 @@ const Company = () => {
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                   {isEditing ? (
                     <>
-                      <button
-                        onClick={handleSave}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={isLoading}
-                      >
+                      <Button onClick={handleSave} disabled={isLoading}>
                         {isLoading ? "Đang lưu..." : isCreating ? "Tạo" : "Lưu"}
-                      </button>
-                      <button
-                        onClick={handleCancel}
-                        className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 focus:ring-2 focus:ring-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={isLoading}
-                      >
+                      </Button>
+                      <Button variant="danger" onClick={handleCancel} disabled={isLoading}>
                         Hủy
-                      </button>
+                      </Button>
                     </>
                   ) : (
                     <>
-                      <button
-                        onClick={() => setIsEditing(true)}
-                        className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-300 transition-colors"
-                      >
+                      <Button onClick={() => setIsEditing(true)}>
                         {isCreating ? "Tạo công ty" : "Chỉnh sửa"}
-                      </button>
+                      </Button>
                       {!isCreating && (
-                        <button
+                        <Button
+                          variant="danger"
                           onClick={handleDelete}
-                          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:ring-2 focus:ring-red-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           disabled={isLoading}
                         >
                           Xóa công ty
-                        </button>
+                        </Button>
                       )}
                     </>
                   )}

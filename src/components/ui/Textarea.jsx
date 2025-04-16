@@ -9,9 +9,10 @@ const Textarea = ({
   required = false,
   rows = 4,
   className = '',
+  ...rest // <-- gom các prop như name, placeholder, minLength
 }) => {
   return (
-    <div className="mb-6">
+    <div className="flex-1">
       {label && (
         <label
           htmlFor={id}
@@ -28,9 +29,11 @@ const Textarea = ({
         required={required}
         rows={rows}
         className={`w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-gray-900 dark:text-gray-100 transition-colors duration-300 text-base ${className}`}
+        {...rest} // <-- truyền phần còn lại ở đây
       />
     </div>
   );
 };
+
 
 export default Textarea;

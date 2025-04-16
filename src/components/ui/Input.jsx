@@ -13,7 +13,7 @@ const Input = ({
   ...props
 }) => {
   return (
-    <div className="mb-6">
+    <div className="flex-1">
       {label && (
         <label
           htmlFor={id}
